@@ -1,0 +1,37 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 19
+        uses: actions/setup-java@v4
+        with:
+          java-version: '19'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Install Railway CLI and Deploy
+        run: |
+          curl -fsSL https://railway.app/install.sh | sh # Instala la CLI de Railway
+          export RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }}
+          export RAILWAY_SERVICE="CitaSaludFeature3---Backend" # Nombre exacto de tu servicio en Railway
+          export RAILWAY_PROJECT="84fc06b3-5d60-4cf6-a0ab-db526a11ce80" # Project ID correcto
+
+        env:
+          # servicio y proyecto disponibles en el entorno de la ejecución
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE: CitaSaludFeature3---Backend
+          RAILWAY_PROJECT: 84fc06b3-5d60-4cf6-a0ab-db526a11ce80
