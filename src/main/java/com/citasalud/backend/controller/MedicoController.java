@@ -4,6 +4,7 @@ import com.citasalud.backend.dto.MedicoDTO; // Para requests (crear/actualizar)
 import com.citasalud.backend.dto.MedicoResponseDTO; // Para responses (con HATEOAS)
 import com.citasalud.backend.dto.MedicoFranjasDTO;
 import com.citasalud.backend.service.MedicoService;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +31,7 @@ public class MedicoController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/obtenermedicos")
+    @GetMapping(value = "/obtenermedicos", produces = MediaTypes.HAL_JSON_VALUE)
     // Cambiar el tipo de retorno para HATEOAS
     public ResponseEntity<CollectionModel<EntityModel<MedicoResponseDTO>>> obtenerMedicos() {
         List<MedicoResponseDTO> medicos = medicoService.obtenerTodosHateoas(); // Nuevo método en servicio que retorna MedicoResponseDTO
@@ -51,7 +52,7 @@ public class MedicoController {
     }
 
     // Nuevo endpoint para obtener un médico por ID y devolverlo con enlaces HATEOAS
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<EntityModel<MedicoResponseDTO>> obtenerMedicoPorId(@PathVariable Long id) {
         MedicoResponseDTO medicoDTO = medicoService.obtenerPorIdHateoas(id); // Nuevo método en servicio
@@ -69,7 +70,7 @@ public class MedicoController {
     }
 
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'COORDINADOR')")
-    @PostMapping("/crearmedico")
+    @PostMapping(value = "/crearmedico", produces = MediaTypes.HAL_JSON_VALUE)
     // Cambiar el tipo de retorno para HATEOAS
     public ResponseEntity<EntityModel<MedicoResponseDTO>> crearMedico(@RequestBody MedicoDTO medicoDTO) {
         // Tu servicio debería retornar ahora un MedicoResponseDTO (con el ID generado)
@@ -84,7 +85,7 @@ public class MedicoController {
     }
 
     // Nuevo endpoint para actualizar un médico
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'COORDINADOR')")
     public ResponseEntity<EntityModel<MedicoResponseDTO>> actualizarMedico(@PathVariable Long id, @RequestBody MedicoDTO medicoDTO) {
         MedicoResponseDTO medicoActualizado = medicoService.actualizarMedicoHateoas(id, medicoDTO); // Nuevo método en servicio
