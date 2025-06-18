@@ -15,10 +15,9 @@ jobs:
 
     steps:
       # 1. Checkout del código
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # fetch-depth: 0 es crucial para que SonarCloud pueda analizar el historial de Git
           fetch-depth: 0
 
       # 2. Configuración de Java
@@ -40,14 +39,9 @@ jobs:
       # 4. Construir, Probar y Analizar con SonarCloud
       - name: Build, Test and Analyze with SonarCloud
         env:
+          # Se definen las variables de entorno para este paso
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # <--- AQUÍ SE USA EL SECRETO
+        # El comando -Dsonar.token ya no es necesario porque el plugin
+        # busca automáticamente la variable de entorno SONAR_TOKEN.
         run: mvn -B clean verify sonar:sonar
-
-#      # 5. PASO COMENTADO: Este paso no se ejecutará
-#      - name: Install Railway CLI and Deploy
-#        run: |
-#          curl -fsSL https://railway.app/install.sh | sh
-#          railway up --service "CitaSaludFeature3---Backend" --detach
-#        env:
-#          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
