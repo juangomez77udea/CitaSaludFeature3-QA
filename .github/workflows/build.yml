@@ -41,7 +41,5 @@ jobs:
         env:
           # Se definen las variables de entorno para este paso
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # <--- AQUÍ SE USA EL SECRETO
-        # El comando -Dsonar.token ya no es necesario porque el plugin
-        # busca automáticamente la variable de entorno SONAR_TOKEN.
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B clean verify sonar:sonar
