@@ -13,7 +13,6 @@ public abstract class AbstractIntegrationTest {
     private static final PostgreSQLContainer<?> postgreSQLContainer;
 
     static {
-        // Inicia el contenedor una sola vez para todas las clases de prueba que hereden de esta.
         postgreSQLContainer = new PostgreSQLContainer<>("postgres:15-alpine")
                 .withDatabaseName("testdb")
                 .withUsername("testuser")
@@ -23,11 +22,9 @@ public abstract class AbstractIntegrationTest {
 
     @DynamicPropertySource
     static void setDatasourceProperties(DynamicPropertyRegistry registry) {
-        // Sobrescribe dinámicamente las propiedades de la aplicación para que apunten al contenedor de prueba
         registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
         registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
         registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
-        // Es una buena práctica usar 'create-drop' en pruebas para asegurar un estado limpio.
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     }
 }
