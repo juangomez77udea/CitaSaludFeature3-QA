@@ -7,7 +7,8 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.1</version>
+		<!-- VERSIÓN ACTUALIZADA A LA ÚLTIMA VERSIÓN DE PARCHE ESTABLE -->
+		<version>3.3.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -26,6 +27,7 @@
 		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 	</properties>
 
+	<!-- El resto del archivo (dependencies y build) se mantiene exactamente igual -->
 	<dependencies>
 		<!-- Dependencias Principales -->
 		<dependency>
@@ -108,8 +110,6 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- **DEPENDENCIAS AÑADIDAS PARA TESTCONTAINERS** -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-testcontainers</artifactId>
@@ -130,7 +130,7 @@
 	<build>
 		<finalName>backend</finalName>
 		<plugins>
-			<!-- **PLUGIN DE COMPILADOR CON CONFIGURACIÓN PARA LOMBOK** -->
+			<!-- PLUGIN DE COMPILADOR CON CONFIGURACIÓN PARA LOMBOK -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -140,7 +140,7 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>${lombok.version}</version> <!-- Maven obtiene la versión del parent -->
+							<version>${lombok.version}</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
@@ -151,11 +151,11 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
-			<!-- Plugins de Sonar y Jacoco (sin cambios) -->
+			<!-- Plugins de Sonar y Jacoco -->
 			<plugin>
 				<groupId>org.sonarsource.scanner.maven</groupId>
 				<artifactId>sonar-maven-plugin</artifactId>
-				<version>3.11.0.3922</version> <!-- Versión estable y compatible -->
+				<version>3.11.0.3922</version>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
@@ -178,4 +178,5 @@
 			</plugin>
 		</plugins>
 	</build>
+
 </project>
