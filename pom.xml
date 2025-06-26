@@ -7,9 +7,9 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<!-- VERSIÓN ACTUALIZADA A LA ÚLTIMA VERSIÓN DE PARCHE ESTABLE -->
+		<!-- Actualizado a la última versión de parche para solucionar vulnerabilidades -->
 		<version>3.3.2</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 
 	<groupId>com.citasalud</groupId>
@@ -21,13 +21,42 @@
 	<properties>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- Propiedad para la versión de JJWT -->
+		<jjwt.version>0.12.5</jjwt.version>
+
+		<!-- Propiedades de Sonar -->
 		<sonar.organization>juangomez77udea</sonar.organization>
 		<sonar.projectKey>juangomez77udea_CitaSaludFeature3-QA</sonar.projectKey>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 	</properties>
 
-	<!-- El resto del archivo (dependencies y build) se mantiene exactamente igual -->
+	<!--
+        SECCIÓN AÑADIDA: dependencyManagement
+        Aquí forzamos la versión de JJWT para todo el proyecto,
+        sobreescribiendo la versión que viene con Spring Boot.
+    -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-api</artifactId>
+				<version>${jjwt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-impl</artifactId>
+				<version>${jjwt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.jsonwebtoken</groupId>
+				<artifactId>jjwt-jackson</artifactId>
+				<version>${jjwt.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<!-- Dependencias Principales -->
 		<dependency>
@@ -51,7 +80,7 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-		<!-- Documentación API (Swagger/OpenAPI) -->
+		<!-- Documentación API -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -65,22 +94,19 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Dependencias para JWT -->
+		<!-- Dependencias para JWT (versión gestionada en dependencyManagement) -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
-			<version>0.12.5</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
-			<version>0.12.5</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
-			<version>0.12.5</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -145,12 +171,10 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-
 			<!-- Plugins de Sonar y Jacoco -->
 			<plugin>
 				<groupId>org.sonarsource.scanner.maven</groupId>

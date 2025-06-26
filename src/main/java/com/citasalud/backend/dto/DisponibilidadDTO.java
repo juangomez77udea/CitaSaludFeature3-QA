@@ -12,6 +12,7 @@ import org.springframework.hateoas.RepresentationModel; // Importa esto
 @AllArgsConstructor
 @Data
 // DisponibilidadDTO extiende RepresentationModel para poder añadir enlaces HATEOAS
+@EqualsAndHashCode(callSuper = false)
 public class DisponibilidadDTO extends RepresentationModel<DisponibilidadDTO> {
     // Necesitamos el ID de la disponibilidad para construir los enlaces
     private Long disponibilidadId;

@@ -2,72 +2,73 @@ package com.citasalud.backend.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 
-@Component // Para que Spring lo detecte como un componente e inyecte
+@Component
 public class JwtTokenProvider {
 
-    // Secreto para firmar el JWT. ¡DEBE SER SEGURO y NO EXPONERSE EN CÓDIGO!
-    // Lo cargaremos desde application.properties o variables de entorno.
     @Value("${app.jwt-secret}")
     private String jwtSecret;
 
-    // Tiempo de expiración del JWT en milisegundos (ej. 1 hora = 3600000 ms)
     @Value("${app.jwt-expiration-milliseconds}")
     private long jwtExpirationDate;
 
-    // 1. Metodo para generar el token JWT
+    // 1. Método para generar el token JWT (VERSIÓN MODERNA)
     public String generateToken(Authentication authentication) {
-        String username = authentication.getName(); // El email del usuario
+        String username = authentication.getName();
 
         Date currentDate = new Date();
         Date expireDate = new Date(currentDate.getTime() + jwtExpirationDate);
 
-        String token = Jwts.builder()
-                .setSubject(username) // El sujeto del token (ej. email del usuario)
-                .setIssuedAt(new Date()) // Fecha de emisión
-                .setExpiration(expireDate) // Fecha de expiración
-                .signWith(key(), SignatureAlgorithm.HS512) // Firma el token con la clave secreta y algoritmo
-                .compact(); // Construye y compacta el token
-        return token;
+        // Se usa un objeto SecretKey en lugar de Key
+        SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+
+        return Jwts.builder()
+                .subject(username) // El método moderno es .subject()
+                .issuedAt(currentDate) // .issuedAt()
+                .expiration(expireDate) // .expiration()
+                .signWith(key) // .signWith() ahora solo necesita la clave
+                .compact();
     }
 
-    // 2. Método para obtener la clave secreta decodificada
-    private Key key() {
+    // El método key() ya no es necesario, la clave se crea y usa directamente.
+    // Si quieres mantenerlo por claridad, debería devolver SecretKey.
+    private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
-    // 3. Método para obtener el username (email) del token JWT
+
+    // 2. Método para obtener el username (email) del token JWT (VERSIÓN MODERNA)
     public String getUsername(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key())
+        Claims claims = Jwts.parser() // El método moderno es .parser()
+                .verifyWith(getSigningKey()) // Se usa .verifyWith() para la clave
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
+
         return claims.getSubject();
     }
 
-    // 4. Método para validar el token JWT
+    // 3. Método para validar el token JWT (VERSIÓN MODERNA)
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key())
+            Jwts.parser()
+                    .verifyWith(getSigningKey())
                     .build()
-                    .parseClaimsJws(token);
-            return true; // Token válido
+                    .parseSignedClaims(token);
+            return true;
         } catch (Exception e) {
-            // Aquí puedes añadir logs más específicos para diferentes excepciones
-            // de JWT (SignatureException, ExpiredJwtException, MalformedJwtException, etc.)
+            // Es buena práctica loguear la excepción
+            // log.error("JWT validation error: {}", e.getMessage());
             System.out.println("JWT inválido: " + e.getMessage());
         }
-        return false; // Token inválido
+        return false;
     }
 }

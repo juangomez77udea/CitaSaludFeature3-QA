@@ -13,8 +13,8 @@ import lombok.Setter;
 @Setter
 public class LoginRequest {
 
-    @Schema(description = "Correo electrónico del usuario", example = "usuario@example.com", required = true)
+    @Schema(description = "Correo electrónico del usuario", example = "usuario@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
     private String email;
-    @Schema(description = "Contraseña del usuario", example = "123456", required = true)
+    @Schema(description = "Contraseña del usuario", example = "123456", requiredMode = Schema.RequiredMode.REQUIRED)
     private String password;
 }
