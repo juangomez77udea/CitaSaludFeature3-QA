@@ -1,7 +1,9 @@
 package com.citasalud.backend.security;
 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -50,9 +52,15 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/swagger-resources/**",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/actuator/prometheus",
+                                "/openapi.yaml",
+                                "/api/especialidades",
+                                "/api/roles"
+
                         ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/medicos/crearmedico").permitAll()
                         .anyRequest().authenticated()
                 );
 
@@ -64,7 +72,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Asegura que tu frontend local esté permitido
+        configuration.setAllowedOrigins(List.of("http://localhost:3000",
+                "https://cita-salud-backend.onrender.com",
+                "https://cita-salud-feature3-frontend.vercel.app/")); // Asegura que tu frontend local esté permitido
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true); // Necesario si se usan cookies o JWT

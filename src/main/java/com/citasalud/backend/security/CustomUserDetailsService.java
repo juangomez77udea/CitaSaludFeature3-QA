@@ -1,7 +1,7 @@
 package com.citasalud.backend.security;
 
-import com.citasalud.backend.domain.Medico; // Asumiendo que tu entidad Medico está aquí
-import com.citasalud.backend.repository.MedicoRepository; // Asumiendo que tienes un repositorio para Medico
+import com.citasalud.backend.domain.Medico;
+import com.citasalud.backend.repository.MedicoRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;

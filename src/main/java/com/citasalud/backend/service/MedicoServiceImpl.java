@@ -1,19 +1,19 @@
 package com.citasalud.backend.service;
 
-import com.citasalud.backend.domain.Especialidad; // Para cargar Especialidad
+import com.citasalud.backend.domain.Especialidad;
 import com.citasalud.backend.domain.Medico;
-import com.citasalud.backend.domain.Rol; // Para cargar Rol
+import com.citasalud.backend.domain.Rol;
 import com.citasalud.backend.dto.MedicoDTO;
 import com.citasalud.backend.dto.MedicoFranjasDTO;
-import com.citasalud.backend.dto.MedicoResponseDTO; // Importa el nuevo DTO
+import com.citasalud.backend.dto.MedicoResponseDTO;
 import com.citasalud.backend.mapper.DisponibilidadMapper;
 import com.citasalud.backend.mapper.MedicoMapper;
-import com.citasalud.backend.repository.EspecialidadRepository; // Necesitas este
+import com.citasalud.backend.repository.EspecialidadRepository;
 import com.citasalud.backend.repository.MedicoRepository;
-import com.citasalud.backend.repository.RolRepository; // Necesitas este
-import jakarta.transaction.Transactional; // Para actualizar/eliminar
-
+import com.citasalud.backend.repository.RolRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;

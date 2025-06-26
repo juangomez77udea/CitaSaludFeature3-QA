@@ -3,8 +3,8 @@ package com.citasalud.backend.mapper;
 import com.citasalud.backend.domain.Especialidad;
 import com.citasalud.backend.domain.Medico;
 import com.citasalud.backend.domain.Rol;
-import com.citasalud.backend.dto.MedicoDTO; // DTO para entrada (request)
-import com.citasalud.backend.dto.MedicoResponseDTO; // DTO para salida (response con HATEOAS)
+import com.citasalud.backend.dto.MedicoDTO;
+import com.citasalud.backend.dto.MedicoResponseDTO;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class MedicoMapper {

@@ -1,23 +1,21 @@
 package com.citasalud.backend.controller;
 
-import com.citasalud.backend.dto.MedicoDTO; // Para requests (crear/actualizar)
-import com.citasalud.backend.dto.MedicoResponseDTO; // Para responses (con HATEOAS)
+import com.citasalud.backend.dto.MedicoDTO;
 import com.citasalud.backend.dto.MedicoFranjasDTO;
+import com.citasalud.backend.dto.MedicoResponseDTO;
 import com.citasalud.backend.service.MedicoService;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.HttpStatus;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
-// HATEOAS Imports
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.CollectionModel;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*; // Importa estáticamente linkTo y methodOn
-
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/medicos")
@@ -31,7 +29,7 @@ public class MedicoController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping(value = "/obtenermedicos", produces = MediaTypes.HAL_JSON_VALUE)
+    @GetMapping("/obtenermedicos")
     // Cambiar el tipo de retorno para HATEOAS
     public ResponseEntity<CollectionModel<EntityModel<MedicoResponseDTO>>> obtenerMedicos() {
         List<MedicoResponseDTO> medicos = medicoService.obtenerTodosHateoas(); // Nuevo método en servicio que retorna MedicoResponseDTO
@@ -52,7 +50,7 @@ public class MedicoController {
     }
 
     // Nuevo endpoint para obtener un médico por ID y devolverlo con enlaces HATEOAS
-    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<EntityModel<MedicoResponseDTO>> obtenerMedicoPorId(@PathVariable Long id) {
         MedicoResponseDTO medicoDTO = medicoService.obtenerPorIdHateoas(id); // Nuevo método en servicio
@@ -69,8 +67,8 @@ public class MedicoController {
         ));
     }
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'COORDINADOR')")
-    @PostMapping(value = "/crearmedico", produces = MediaTypes.HAL_JSON_VALUE)
+  //  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'COORDINADOR')")
+    @PostMapping("/crearmedico")
     // Cambiar el tipo de retorno para HATEOAS
     public ResponseEntity<EntityModel<MedicoResponseDTO>> crearMedico(@RequestBody MedicoDTO medicoDTO) {
         // Tu servicio debería retornar ahora un MedicoResponseDTO (con el ID generado)
@@ -85,7 +83,7 @@ public class MedicoController {
     }
 
     // Nuevo endpoint para actualizar un médico
-    @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'COORDINADOR')")
     public ResponseEntity<EntityModel<MedicoResponseDTO>> actualizarMedico(@PathVariable Long id, @RequestBody MedicoDTO medicoDTO) {
         MedicoResponseDTO medicoActualizado = medicoService.actualizarMedicoHateoas(id, medicoDTO); // Nuevo método en servicio

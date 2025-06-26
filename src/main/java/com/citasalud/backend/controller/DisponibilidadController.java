@@ -1,4 +1,3 @@
-// Ubicación: src/main/java/com/citasalud/backend/controller/DisponibilidadController.java
 package com.citasalud.backend.controller;
 
 import com.citasalud.backend.dto.DisponibilidadDTO;
@@ -7,7 +6,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,81 +21,94 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @CrossOrigin(origins = "*")
 @SecurityRequirement(name = "BearerAuth")
 public class DisponibilidadController {
-    private final DisponibilidadService disponibilidadService;
+    private final DisponibilidadService franjaHorariaService;
 
-    public DisponibilidadController(DisponibilidadService disponibilidadService) {
-        this.disponibilidadService = disponibilidadService;
+    public DisponibilidadController(DisponibilidadService franjaHorariaService) {
+        this.franjaHorariaService = franjaHorariaService;
     }
 
-    @PostMapping(value = "/{medicoId}", produces = MediaTypes.HAL_JSON_VALUE)
+    // HU002 - Agregar franja horaria a un médico
+    @PostMapping("/{medicoId}") // Cambiado a {medicoId} para ser más explícito
     @PreAuthorize("hasAnyRole('MEDICO', 'COORDINADOR')")
-    public ResponseEntity<EntityModel<DisponibilidadDTO>> agregarFranja(@Valid @RequestBody DisponibilidadDTO dto, @PathVariable("medicoId") Long medicoId) {
-        DisponibilidadDTO nuevaFranja = disponibilidadService.agregarFranjaHateoas(dto, medicoId);
-        if (nuevaFranja == null || nuevaFranja.getDisponibilidadId() == null) {
-            return ResponseEntity.status(500).build(); // Error interno si el servicio no devuelve un objeto válido
-        }
+    public ResponseEntity<EntityModel<DisponibilidadDTO>> agregarFranja(@Valid @RequestBody DisponibilidadDTO dto,
+                                                                        @PathVariable("medicoId") Long medicoId) {
+        DisponibilidadDTO nuevaFranja = franjaHorariaService.agregarFranjaHateoas(dto, medicoId); // Nuevo método en servicio
+
         return ResponseEntity
                 .created(linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(nuevaFranja.getDisponibilidadId())).toUri())
                 .body(EntityModel.of(nuevaFranja,
-                        linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(nuevaFranja.getDisponibilidadId())).withSelfRel()
+                        linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(nuevaFranja.getDisponibilidadId())).withSelfRel(),
+                        linkTo(methodOn(DisponibilidadController.class).obtenerFranjas()).withRel("franjas")
                 ));
     }
 
-    @GetMapping(value = "/medico/{medicoId}", produces = MediaTypes.HAL_JSON_VALUE)
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()") // O los roles apropiados
+    @GetMapping("/medico/{medicoId}") // Ruta para obtener franjas de un médico específico
     public ResponseEntity<CollectionModel<EntityModel<DisponibilidadDTO>>> obtenerDisponibilidadesPorMedico(@PathVariable Long medicoId) {
-        List<DisponibilidadDTO> franjas = disponibilidadService.obtenerDisponibilidadesPorMedico(medicoId);
+        List<DisponibilidadDTO> franjas = franjaHorariaService.obtenerDisponibilidadesPorMedico(medicoId);
+
         List<EntityModel<DisponibilidadDTO>> franjaModels = franjas.stream()
                 .map(franjaDTO -> EntityModel.of(franjaDTO,
                         linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(franjaDTO.getDisponibilidadId())).withSelfRel(),
+                        // Enlace al médico asociado (asegúrate de que tu DTO de Disponibilidad tenga el ID del médico si lo quieres aquí)
                         linkTo(methodOn(MedicoController.class).obtenerMedicoPorId(medicoId)).withRel("medico")
                 ))
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(CollectionModel.of(franjaModels,
-                linkTo(methodOn(DisponibilidadController.class).obtenerDisponibilidadesPorMedico(medicoId)).withSelfRel()
+                linkTo(methodOn(DisponibilidadController.class).obtenerDisponibilidadesPorMedico(medicoId)).withSelfRel() // Enlace a esta colección específica
         ));
     }
 
-    @GetMapping(value = "/listarfranjas", produces = MediaTypes.HAL_JSON_VALUE)
     @PreAuthorize("isAuthenticated()")
+    @GetMapping("/listarfranjas")
     public ResponseEntity<CollectionModel<EntityModel<DisponibilidadDTO>>> obtenerFranjas() {
-        List<DisponibilidadDTO> franjas = disponibilidadService.listarFranjas();
+        List<DisponibilidadDTO> franjas = franjaHorariaService.listarFranjas();
+
         List<EntityModel<DisponibilidadDTO>> franjaModels = franjas.stream()
                 .map(franjaDTO -> EntityModel.of(franjaDTO,
-                        linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(franjaDTO.getDisponibilidadId())).withSelfRel()
+                        linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(franjaDTO.getDisponibilidadId())).withSelfRel(),
+                        linkTo(methodOn(MedicoController.class).obtenerMedicoPorId(franjaDTO.getDisponibilidadId() /* Aquí necesitas el medicoId asociado a la franja, tu DTO no lo tiene */)).withRel("medico-asociado") // Esto es conceptual, tu DTO de Disponibilidad no tiene medicoId
+                        // Puedes añadir enlaces a 'update' y 'delete' aquí
                 ))
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(CollectionModel.of(franjaModels,
                 linkTo(methodOn(DisponibilidadController.class).obtenerFranjas()).withSelfRel()
         ));
     }
 
-    @GetMapping(value = "/{idFranja}", produces = MediaTypes.HAL_JSON_VALUE)
+    // Nuevo endpoint para obtener una franja por ID
+    @GetMapping("/{idFranja}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<EntityModel<DisponibilidadDTO>> obtenerFranjaPorId(@PathVariable("idFranja") Long idFranja) {
-        DisponibilidadDTO franjaDTO = disponibilidadService.obtenerFranjaPorIdHateoas(idFranja);
-        if (franjaDTO == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(EntityModel.of(franjaDTO,
-                linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(idFranja)).withSelfRel()
-        ));
-    }
-
-    @PutMapping(value = "/{idFranja}", produces = MediaTypes.HAL_JSON_VALUE)
-    @PreAuthorize("hasAnyRole('MEDICO', 'COORDINADOR', 'ADMINISTRADOR')")
-    public ResponseEntity<EntityModel<DisponibilidadDTO>> actualizarFranja(@PathVariable("idFranja") Long franjaId, @Valid @RequestBody DisponibilidadDTO dto) {
-        DisponibilidadDTO franjaActualizada = disponibilidadService.actualizarFranjaHateoas(franjaId, dto);
-        if(franjaActualizada == null || franjaActualizada.getDisponibilidadId() == null) {
+        DisponibilidadDTO franjaDTO = franjaHorariaService.obtenerFranjaPorIdHateoas(idFranja); // Nuevo método
+        if (franjaDTO == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(EntityModel.of(franjaActualizada,
-                linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(franjaActualizada.getDisponibilidadId())).withSelfRel()
+        return ResponseEntity.ok(EntityModel.of(franjaDTO,
+                linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(idFranja)).withSelfRel(),
+                linkTo(methodOn(DisponibilidadController.class).obtenerFranjas()).withRel("franjas"),
+                linkTo(methodOn(DisponibilidadController.class).actualizarFranja(idFranja, null)).withRel("update-franja"),
+                linkTo(methodOn(DisponibilidadController.class).eliminarFranja(idFranja)).withRel("delete-franja")
         ));
     }
 
-    @DeleteMapping("/{idFranja}")
     @PreAuthorize("hasAnyRole('MEDICO', 'COORDINADOR', 'ADMINISTRADOR')")
+    @DeleteMapping("/{idFranja}")
     public ResponseEntity<Void> eliminarFranja(@PathVariable("idFranja") Long franjaId) {
-        disponibilidadService.eliminarFranja(franjaId);
+        franjaHorariaService.eliminarFranja(franjaId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyRole('MEDICO', 'COORDINADOR', 'ADMINISTRADOR')")
+    @PutMapping("/{idFranja}")
+    public ResponseEntity<EntityModel<DisponibilidadDTO>> actualizarFranja(@PathVariable("idFranja") Long franjaId,
+            @Valid @RequestBody DisponibilidadDTO dto) {
+        DisponibilidadDTO franjaActualizada = franjaHorariaService.actualizarFranjaHateoas(franjaId, dto); // Nuevo método en servicio
+        return ResponseEntity.ok(EntityModel.of(franjaActualizada,
+                linkTo(methodOn(DisponibilidadController.class).obtenerFranjaPorId(franjaActualizada.getDisponibilidadId())).withSelfRel(),
+                linkTo(methodOn(DisponibilidadController.class).obtenerFranjas()).withRel("franjas")
+        ));
     }
 }

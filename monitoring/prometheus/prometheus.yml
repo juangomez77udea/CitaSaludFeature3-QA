@@ -1,0 +1,12 @@
+# prometheus.yml (Guardar en la carpeta 'monitoring/prometheus')
+
+global:
+  scrape_interval: 15s # Prometheus buscará métricas de los targets cada 15 segundos
+
+scrape_configs:
+  - job_name: 'spring_boot_app' # Nombre de la tarea (puedes cambiarlo)
+    metrics_path: '/actuator/prometheus' # La ruta en tu Spring Boot donde se exponen las métricas
+    static_configs:
+      # 'backend' es el nombre del servicio de tu aplicación en el docker-compose.yml
+      # '8080' es el puerto en el que tu aplicación Spring Boot escucha DENTRO de su contenedor
+      - targets: ['backend:8080']

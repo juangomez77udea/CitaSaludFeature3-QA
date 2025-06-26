@@ -2,7 +2,7 @@ package com.citasalud.backend.service;
 
 import com.citasalud.backend.dto.MedicoDTO;
 import com.citasalud.backend.dto.MedicoFranjasDTO;
-import com.citasalud.backend.dto.MedicoResponseDTO; // Importa el nuevo DTO
+import com.citasalud.backend.dto.MedicoResponseDTO;
 
 import java.util.List;
 
