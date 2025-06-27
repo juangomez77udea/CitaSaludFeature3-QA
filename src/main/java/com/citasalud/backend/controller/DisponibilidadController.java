@@ -111,4 +111,5 @@ public class DisponibilidadController {
                 linkTo(methodOn(DisponibilidadController.class).obtenerFranjas()).withRel("franjas")
         ));
     }
+
 }
