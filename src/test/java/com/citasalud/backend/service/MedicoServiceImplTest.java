@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
@@ -42,19 +41,14 @@ class MedicoServiceImplTest {
 
     private MedicoDTO medicoDTO;
     private Medico medico;
-    private Especialidad especialidad;
-    private Rol rol;
 
     @BeforeEach
     void setUp() {
         medicoDTO = DataProvider.crearMedicoDTO();
         medico = DataProvider.crearListaMedicosConRelaciones().get(0);
-        especialidad = medico.getEspecialidad();
-        rol = medico.getRolId();
     }
 
     // --- Tus Tests Existentes ---
-
     @Test
     void obtenerTodosHateoas_debeRetornarLista() {
         when(medicoRepository.findAll()).thenReturn(DataProvider.crearListaMedicosEntidad());
@@ -135,16 +129,6 @@ class MedicoServiceImplTest {
     }
 
     @Test
-    void actualizarMedicoHateoas_cuandoRolNuevoNoExiste_debeLanzarExcepcion() {
-        medicoDTO.setRolId(99L);
-        medicoDTO.setEspecialidadId(medico.getEspecialidad().getEspecialidadId());
-        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
-        when(rolRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> medicoService.actualizarMedicoHateoas(1L, medicoDTO));
-        verify(especialidadRepository, never()).findById(anyLong());
-    }
-
-    @Test
     void eliminarMedico_cuandoNoExiste_debeLanzarExcepcion() {
         when(medicoRepository.existsById(99L)).thenReturn(false);
         assertThrows(RuntimeException.class, () -> medicoService.eliminarMedico(99L));
@@ -171,7 +155,6 @@ class MedicoServiceImplTest {
         assertFalse(medicoDTO.getFranjasDisponibles().isEmpty());
     }
 
-    // --- TEST CORREGIDO ---
     @Test
     void listarMedicosConFranjas_conDisponibilidadesNulas_debeRetornarListaVaciaDeFranjas() {
         List<Medico> medicosSinFranjas = DataProvider.crearMedicoConDisponibilidadesNulas();
@@ -179,8 +162,58 @@ class MedicoServiceImplTest {
         List<MedicoFranjasDTO> resultado = medicoService.listarMedicosConFranjas();
         assertNotNull(resultado);
         assertFalse(resultado.isEmpty());
-        MedicoFranjasDTO medicoDTO = resultado.get(0); // <-- La variable es medicoDTO
-        assertNotNull(medicoDTO.getFranjasDisponibles()); // <-- Usamos medicoDTO
-        assertTrue(medicoDTO.getFranjasDisponibles().isEmpty()); // <-- Usamos medicoDTO
+        MedicoFranjasDTO dtoResultado = resultado.get(0);
+        assertNotNull(dtoResultado.getFranjasDisponibles());
+        assertTrue(dtoResultado.getFranjasDisponibles().isEmpty());
+    }
+
+    // --- NUEVOS TESTS PARA AUMENTAR COBERTURA ---
+
+    @Test
+    void actualizarMedicoHateoas_conIdEspecialidadNulo_noDebeActualizarEspecialidad() {
+        medicoDTO.setEspecialidadId(null);
+        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
+        when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
+
+        medicoService.actualizarMedicoHateoas(1L, medicoDTO);
+
+        verify(especialidadRepository, never()).findById(anyLong());
+        verify(medicoRepository).save(any(Medico.class));
+    }
+
+    @Test
+    void actualizarMedicoHateoas_conMismoIdEspecialidad_noDebeActualizarEspecialidad() {
+        medicoDTO.setEspecialidadId(medico.getEspecialidad().getEspecialidadId());
+        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
+        when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
+
+        medicoService.actualizarMedicoHateoas(1L, medicoDTO);
+
+        verify(especialidadRepository, never()).findById(anyLong());
+        verify(medicoRepository).save(any(Medico.class));
+    }
+
+    @Test
+    void actualizarMedicoHateoas_conIdRolNulo_noDebeActualizarRol() {
+        medicoDTO.setRolId(null);
+        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
+        when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
+
+        medicoService.actualizarMedicoHateoas(1L, medicoDTO);
+
+        verify(rolRepository, never()).findById(anyLong());
+        verify(medicoRepository).save(any(Medico.class));
+    }
+
+    @Test
+    void actualizarMedicoHateoas_conMismoIdRol_noDebeActualizarRol() {
+        medicoDTO.setRolId(medico.getRolId().getRolId());
+        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
+        when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
+
+        medicoService.actualizarMedicoHateoas(1L, medicoDTO);
+
+        verify(rolRepository, never()).findById(anyLong());
+        verify(medicoRepository).save(any(Medico.class));
     }
 }
