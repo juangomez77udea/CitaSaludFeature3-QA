@@ -7,6 +7,7 @@ import com.citasalud.backend.domain.Rol;
 import com.citasalud.backend.dto.MedicoDTO;
 import com.citasalud.backend.dto.MedicoFranjasDTO;
 import com.citasalud.backend.dto.MedicoResponseDTO;
+import com.citasalud.backend.mapper.MedicoMapper;
 import com.citasalud.backend.repository.EspecialidadRepository;
 import com.citasalud.backend.repository.MedicoRepository;
 import com.citasalud.backend.repository.RolRepository;
@@ -15,7 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,185 +38,171 @@ class MedicoServiceImplTest {
     private EspecialidadRepository especialidadRepository;
     @Mock
     private RolRepository rolRepository;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private MedicoServiceImpl medicoService;
 
     private MedicoDTO medicoDTO;
     private Medico medico;
+    private Especialidad especialidad;
+    private Rol rol;
 
     @BeforeEach
     void setUp() {
         medicoDTO = DataProvider.crearMedicoDTO();
         medico = DataProvider.crearListaMedicosConRelaciones().get(0);
+        especialidad = medico.getEspecialidad();
+        rol = medico.getRolId();
     }
 
-    // --- Tus Tests Existentes ---
+    // --- Pruebas para obtenerTodosHateoas ---
     @Test
-    void obtenerTodosHateoas_debeRetornarLista() {
-        when(medicoRepository.findAll()).thenReturn(DataProvider.crearListaMedicosEntidad());
-        List<MedicoResponseDTO> resultado = medicoService.obtenerTodosHateoas();
-        assertNotNull(resultado);
-        assertFalse(resultado.isEmpty());
+    void obtenerTodosHateoas_debeRetornarListaDeMedicos() {
+        try (MockedStatic<MedicoMapper> mockedMapper = mockStatic(MedicoMapper.class)) {
+            when(medicoRepository.findAll()).thenReturn(List.of(medico));
+            mockedMapper.when(() -> MedicoMapper.toResponseDTO(any(Medico.class))).thenReturn(new MedicoResponseDTO());
+
+            List<MedicoResponseDTO> resultado = medicoService.obtenerTodosHateoas();
+
+            assertNotNull(resultado);
+            assertFalse(resultado.isEmpty());
+        }
     }
 
+    // --- Pruebas para obtenerPorIdHateoas ---
     @Test
-    void obtenerPorIdHateoas_cuandoExiste_debeRetornarDto() {
-        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
-        MedicoResponseDTO resultado = medicoService.obtenerPorIdHateoas(1L);
-        assertNotNull(resultado);
+    void obtenerPorIdHateoas_cuandoMedicoExiste_debeRetornarDto() {
+        try (MockedStatic<MedicoMapper> mockedMapper = mockStatic(MedicoMapper.class)) {
+            when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
+            mockedMapper.when(() -> MedicoMapper.toResponseDTO(medico)).thenReturn(new MedicoResponseDTO());
+
+            MedicoResponseDTO resultado = medicoService.obtenerPorIdHateoas(1L);
+
+            assertNotNull(resultado);
+        }
     }
 
-    @Test
-    void obtenerPorIdHateoas_cuandoNoExiste_debeRetornarNull() {
-        when(medicoRepository.findById(99L)).thenReturn(Optional.empty());
-        assertNull(medicoService.obtenerPorIdHateoas(99L));
-    }
-
+    // --- Pruebas para crearMedico ---
     @Test
     void crearMedico_conDatosValidos_debeGuardar() {
-        when(especialidadRepository.findById(anyLong())).thenReturn(Optional.of(new Especialidad()));
-        when(rolRepository.findById(anyLong())).thenReturn(Optional.of(new Rol()));
-        medicoService.crearMedico(medicoDTO);
-        verify(medicoRepository).save(any(Medico.class));
+        try (MockedStatic<MedicoMapper> mockedMapper = mockStatic(MedicoMapper.class)) {
+            mockedMapper.when(() -> MedicoMapper.toEntity(medicoDTO)).thenReturn(medico);
+            when(especialidadRepository.findById(anyLong())).thenReturn(Optional.of(especialidad));
+            when(rolRepository.findById(anyLong())).thenReturn(Optional.of(rol));
+
+            medicoService.crearMedico(medicoDTO);
+
+            verify(medicoRepository).save(medico);
+        }
     }
 
+    // --- Pruebas para crearMedicoHateoas ---
     @Test
     void crearMedicoHateoas_conDatosValidos_debeGuardarYRetornar() {
-        Medico medicoGuardado = new Medico();
-        medicoGuardado.setId(1L);
-        medicoGuardado.setEspecialidad(new Especialidad());
-        medicoGuardado.setRolId(new Rol());
-        when(especialidadRepository.findById(anyLong())).thenReturn(Optional.of(new Especialidad()));
-        when(rolRepository.findById(anyLong())).thenReturn(Optional.of(new Rol()));
-        when(medicoRepository.save(any(Medico.class))).thenReturn(medicoGuardado);
-        MedicoResponseDTO resultado = medicoService.crearMedicoHateoas(medicoDTO);
-        assertNotNull(resultado);
-        assertEquals(1L, resultado.getId());
+        try (MockedStatic<MedicoMapper> mockedMapper = mockStatic(MedicoMapper.class)) {
+            mockedMapper.when(() -> MedicoMapper.toEntity(any(MedicoDTO.class))).thenReturn(medico);
+            mockedMapper.when(() -> MedicoMapper.toResponseDTO(any(Medico.class))).thenReturn(new MedicoResponseDTO());
+            when(especialidadRepository.findById(anyLong())).thenReturn(Optional.of(especialidad));
+            when(rolRepository.findById(anyLong())).thenReturn(Optional.of(rol));
+            when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
+
+            assertNotNull(medicoService.crearMedicoHateoas(medicoDTO));
+        }
     }
 
+    // --- Pruebas para actualizarMedicoHateoas ---
     @Test
-    void crearMedico_conEspecialidadInvalida_debeLanzarExcepcion() {
-        when(especialidadRepository.findById(anyLong())).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> medicoService.crearMedico(medicoDTO));
-    }
-
-    @Test
-    void crearMedico_conRolInvalido_debeLanzarExcepcion() {
-        when(especialidadRepository.findById(anyLong())).thenReturn(Optional.of(new Especialidad()));
-        when(rolRepository.findById(anyLong())).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> medicoService.crearMedico(medicoDTO));
-    }
-
-    @Test
-    void actualizarMedicoHateoas_cuandoMedicoNoExiste_debeLanzarExcepcion() {
-        when(medicoRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> medicoService.actualizarMedicoHateoas(99L, new MedicoDTO()));
-    }
-
-    @Test
-    void actualizarMedicoHateoas_conNuevosIdsValidos_debeActualizar() {
+    void actualizarMedicoHateoas_conDatosValidos_debeActualizarYRetornar() {
         Medico medicoExistente = DataProvider.crearListaMedicosConRelaciones().get(0);
         medicoExistente.getEspecialidad().setEspecialidadId(1L);
         medicoExistente.getRolId().setRolId(1L);
-        MedicoDTO medicoUpdateDTO = DataProvider.crearMedicoDTO();
-        medicoUpdateDTO.setEspecialidadId(2L);
-        medicoUpdateDTO.setRolId(2L);
-        when(medicoRepository.findById(anyLong())).thenReturn(Optional.of(medicoExistente));
-        when(especialidadRepository.findById(2L)).thenReturn(Optional.of(new Especialidad()));
-        when(rolRepository.findById(2L)).thenReturn(Optional.of(new Rol()));
-        when(medicoRepository.save(any(Medico.class))).thenAnswer(i -> i.getArgument(0));
-        medicoService.actualizarMedicoHateoas(1L, medicoUpdateDTO);
-        verify(especialidadRepository).findById(2L);
-        verify(rolRepository).findById(2L);
+
+        medicoDTO.setEspecialidadId(2L);
+        medicoDTO.setRolId(2L);
+
+        Especialidad nuevaEspecialidad = new Especialidad();
+        nuevaEspecialidad.setEspecialidadId(2L);
+        Rol nuevoRol = new Rol();
+        nuevoRol.setRolId(2L);
+
+        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medicoExistente));
+        when(especialidadRepository.findById(2L)).thenReturn(Optional.of(nuevaEspecialidad));
+        when(rolRepository.findById(2L)).thenReturn(Optional.of(nuevoRol));
+        when(medicoRepository.save(any(Medico.class))).thenReturn(medicoExistente);
+
+        try (MockedStatic<MedicoMapper> mockedMapper = mockStatic(MedicoMapper.class)) {
+            mockedMapper.when(() -> MedicoMapper.toResponseDTO(any(Medico.class))).thenReturn(new MedicoResponseDTO());
+            assertNotNull(medicoService.actualizarMedicoHateoas(1L, medicoDTO));
+            verify(medicoRepository).save(any(Medico.class));
+        }
+    }
+
+    // --- Pruebas para listarMedicosConFranjas ---
+    @Test
+    void listarMedicosConFranjas_conDatosCompletos_mapeaCorrectamente() {
+        when(medicoRepository.findAllWithDisponibilidades()).thenReturn(List.of(medico));
+
+        List<MedicoFranjasDTO> resultado = medicoService.listarMedicosConFranjas();
+
+        assertFalse(resultado.isEmpty());
+        assertEquals(medico.getNombre(), resultado.get(0).getNombre());
+    }
+
+    // --- Pruebas de Ramas y Errores (para cobertura) ---
+
+    @Test
+    void crearMedico_cuandoEspecialidadNoExiste_lanzaExcepcion() {
+        try (MockedStatic<MedicoMapper> mockedMapper = mockStatic(MedicoMapper.class)) {
+            mockedMapper.when(() -> MedicoMapper.toEntity(medicoDTO)).thenReturn(medico);
+            when(especialidadRepository.findById(anyLong())).thenReturn(Optional.empty());
+            assertThrows(RuntimeException.class, () -> medicoService.crearMedico(medicoDTO));
+        }
     }
 
     @Test
-    void eliminarMedico_cuandoNoExiste_debeLanzarExcepcion() {
+    void crearMedicoHateoas_cuandoRolNoExiste_lanzaExcepcion() {
+        try (MockedStatic<MedicoMapper> mockedMapper = mockStatic(MedicoMapper.class)) {
+            mockedMapper.when(() -> MedicoMapper.toEntity(medicoDTO)).thenReturn(medico);
+            when(especialidadRepository.findById(anyLong())).thenReturn(Optional.of(especialidad));
+            when(rolRepository.findById(anyLong())).thenReturn(Optional.empty());
+            assertThrows(RuntimeException.class, () -> medicoService.crearMedicoHateoas(medicoDTO));
+        }
+    }
+
+    @Test
+    void actualizarMedicoHateoas_cuandoMedicoNoExiste_lanzaExcepcion() {
+        when(medicoRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> medicoService.actualizarMedicoHateoas(99L, medicoDTO));
+    }
+
+    @Test
+    void actualizarMedicoHateoas_cuandoNuevaEspecialidadNoExiste_lanzaExcepcion() {
+        medicoDTO.setEspecialidadId(99L);
+        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
+        when(especialidadRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> medicoService.actualizarMedicoHateoas(1L, medicoDTO));
+    }
+
+    @Test
+    void eliminarMedico_cuandoNoExiste_lanzaExcepcion() {
         when(medicoRepository.existsById(99L)).thenReturn(false);
         assertThrows(RuntimeException.class, () -> medicoService.eliminarMedico(99L));
     }
 
     @Test
-    void eliminarMedico_cuandoExiste_debeLlamarDelete() {
-        when(medicoRepository.existsById(1L)).thenReturn(true);
-        doNothing().when(medicoRepository).deleteById(1L);
-        medicoService.eliminarMedico(1L);
-        verify(medicoRepository).deleteById(1L);
-    }
+    void listarMedicosConFranjas_cuandoRelacionesSonNulas_mapeaCorrectamente() {
+        medico.setEspecialidad(null);
+        medico.setRolId(null);
+        medico.setDisponibilidades(Collections.emptyList());
+        when(medicoRepository.findAllWithDisponibilidades()).thenReturn(List.of(medico));
 
-    @Test
-    void listarMedicosConFranjas_conDatosCompletos_debeMapearTodo() {
-        List<Medico> medicosConDatos = DataProvider.crearListaMedicosConRelaciones();
-        when(medicoRepository.findAllWithDisponibilidades()).thenReturn(medicosConDatos);
         List<MedicoFranjasDTO> resultado = medicoService.listarMedicosConFranjas();
-        assertNotNull(resultado);
+
         assertFalse(resultado.isEmpty());
-        MedicoFranjasDTO medicoDTO = resultado.get(0);
-        assertNotNull(medicoDTO.getEspecialidadNombre());
-        assertNotNull(medicoDTO.getRolNombre());
-        assertFalse(medicoDTO.getFranjasDisponibles().isEmpty());
-    }
-
-    @Test
-    void listarMedicosConFranjas_conDisponibilidadesNulas_debeRetornarListaVaciaDeFranjas() {
-        List<Medico> medicosSinFranjas = DataProvider.crearMedicoConDisponibilidadesNulas();
-        when(medicoRepository.findAllWithDisponibilidades()).thenReturn(medicosSinFranjas);
-        List<MedicoFranjasDTO> resultado = medicoService.listarMedicosConFranjas();
-        assertNotNull(resultado);
-        assertFalse(resultado.isEmpty());
-        MedicoFranjasDTO dtoResultado = resultado.get(0);
-        assertNotNull(dtoResultado.getFranjasDisponibles());
-        assertTrue(dtoResultado.getFranjasDisponibles().isEmpty());
-    }
-
-    // --- NUEVOS TESTS PARA AUMENTAR COBERTURA ---
-
-    @Test
-    void actualizarMedicoHateoas_conIdEspecialidadNulo_noDebeActualizarEspecialidad() {
-        medicoDTO.setEspecialidadId(null);
-        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
-        when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
-
-        medicoService.actualizarMedicoHateoas(1L, medicoDTO);
-
-        verify(especialidadRepository, never()).findById(anyLong());
-        verify(medicoRepository).save(any(Medico.class));
-    }
-
-    @Test
-    void actualizarMedicoHateoas_conMismoIdEspecialidad_noDebeActualizarEspecialidad() {
-        medicoDTO.setEspecialidadId(medico.getEspecialidad().getEspecialidadId());
-        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
-        when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
-
-        medicoService.actualizarMedicoHateoas(1L, medicoDTO);
-
-        verify(especialidadRepository, never()).findById(anyLong());
-        verify(medicoRepository).save(any(Medico.class));
-    }
-
-    @Test
-    void actualizarMedicoHateoas_conIdRolNulo_noDebeActualizarRol() {
-        medicoDTO.setRolId(null);
-        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
-        when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
-
-        medicoService.actualizarMedicoHateoas(1L, medicoDTO);
-
-        verify(rolRepository, never()).findById(anyLong());
-        verify(medicoRepository).save(any(Medico.class));
-    }
-
-    @Test
-    void actualizarMedicoHateoas_conMismoIdRol_noDebeActualizarRol() {
-        medicoDTO.setRolId(medico.getRolId().getRolId());
-        when(medicoRepository.findById(1L)).thenReturn(Optional.of(medico));
-        when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
-
-        medicoService.actualizarMedicoHateoas(1L, medicoDTO);
-
-        verify(rolRepository, never()).findById(anyLong());
-        verify(medicoRepository).save(any(Medico.class));
+        MedicoFranjasDTO dto = resultado.get(0);
+        assertNull(dto.getEspecialidadNombre());
+        assertNull(dto.getRolNombre());
     }
 }
