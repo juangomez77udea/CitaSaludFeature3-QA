@@ -1,4 +1,3 @@
-// Ubicación: src/test/java/com/citasalud/backend/service/MedicoServiceImplTest.java
 package com.citasalud.backend.service;
 
 import com.citasalud.backend.DataProvider;
@@ -17,7 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,6 +75,8 @@ class MedicoServiceImplTest {
         MedicoDTO dto = DataProvider.crearMedicoDTO();
         Medico medicoGuardado = new Medico();
         medicoGuardado.setId(1L);
+        medicoGuardado.setEspecialidad(new Especialidad()); // Añadir para evitar NullPointer
+        medicoGuardado.setRolId(new Rol()); // Añadir para evitar NullPointer
 
         when(especialidadRepository.findById(anyLong())).thenReturn(Optional.of(new Especialidad()));
         when(rolRepository.findById(anyLong())).thenReturn(Optional.of(new Rol()));
@@ -142,8 +142,8 @@ class MedicoServiceImplTest {
         medicoExistente.getRolId().setRolId(rolId);
 
         MedicoDTO medicoUpdateDTO = DataProvider.crearMedicoDTO();
-        medicoUpdateDTO.setEspecialidadId(especialidadId); // Mismo ID
-        medicoUpdateDTO.setRolId(rolId); // Mismo ID
+        medicoUpdateDTO.setEspecialidadId(especialidadId);
+        medicoUpdateDTO.setRolId(rolId);
 
         when(medicoRepository.findById(medicoId)).thenReturn(Optional.of(medicoExistente));
         when(medicoRepository.save(any(Medico.class))).thenAnswer(i -> i.getArgument(0));
