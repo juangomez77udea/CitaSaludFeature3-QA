@@ -1,17 +1,17 @@
-# render.yaml (Corregido con el tipo 'psql' y la indentación correcta)
+# render.yaml (Corregido con la propiedad 'runtime' requerida)
 
 services:
   # 1. Servicio Web para el backend
   - type: web
     name: backend-citasalud
-    env: docker
+    runtime: docker # <-- CORREGIDO: Esta es la propiedad correcta en lugar de 'env: docker'
     plan: free
     healthCheckPath: /actuator/health
 
     envVars:
       - key: DB_URL
         fromDatabase:
-          name: cita-salud-db # Usamos el nuevo nombre para evitar conflictos
+          name: cita-salud-db
           property: internalConnectionString
       - key: DB_USERNAME
         fromDatabase:
@@ -28,6 +28,7 @@ services:
         sync: false
 
   # 2. Servicio de Base de Datos PostgreSQL
-  - type: psql # <-- CORREGIDO: El tipo correcto es 'psql'
-    name: cita-salud-db # Le damos un nombre único para la base de datos
+  - type: psql
+    name: cita-salud-db
     plan: free
+    postgresMajorVersion: 15
