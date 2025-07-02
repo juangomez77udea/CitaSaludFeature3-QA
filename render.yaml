@@ -1,13 +1,9 @@
-# render.yaml (Corregido con la propiedad 'runtime' requerida)
-
 services:
-  # 1. Servicio Web para el backend
   - type: web
     name: backend-citasalud
-    runtime: docker # <-- CORREGIDO: Esta es la propiedad correcta en lugar de 'env: docker'
+    runtime: docker
     plan: free
     healthCheckPath: /actuator/health
-
     envVars:
       - key: DB_URL
         fromDatabase:
@@ -21,14 +17,11 @@ services:
         fromDatabase:
           name: cita-salud-db
           property: password
-
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRATION
         sync: false
 
-  # 2. Servicio de Base de Datos PostgreSQL
   - type: psql
     name: cita-salud-db
     plan: free
-    postgresMajorVersion: 15
