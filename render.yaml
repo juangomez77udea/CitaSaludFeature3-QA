@@ -1,25 +1,19 @@
-# render.yaml (Colocar en la raíz del proyecto)
+# render.yaml (Versión final y recomendada)
 
 services:
   # Define el servicio web para tu backend de Spring Boot
   - type: web
-    name: backend-citasalud # Nombre de tu servicio en Render
-    env: docker # Indica a Render que use tu Dockerfile
-    dockerfilePath: ./Dockerfile # Ruta a tu Dockerfile
-
-    # Configuración del plan de instancia (puedes empezar con el gratuito)
+    name: backend-citasalud
+    env: docker
     plan: free
+    healthCheckPath: /actuator/health
 
-    # Configuración del puerto
-    healthCheckPath: /actuator/health # Ruta para que Render verifique que tu app está viva
-
-    # Variables de entorno para conectar a tu base de datos de Render
-    # ¡MUY IMPORTANTE! Render las inyectará automáticamente si tu base de datos
-    # y tu servicio web están en el mismo proyecto de Render.
+    # Variables de entorno
     envVars:
-      - key: DB_URL # Render provee la URL interna, más rápida y segura
+      # --- Conexión a la Base de Datos (gestionada por Render) ---
+      - key: DB_URL
         fromDatabase:
-          name: cita_salud # El nombre de tu base de datos en Render
+          name: cita_salud
           property: internalConnectionString
       - key: DB_USERNAME
         fromDatabase:
@@ -30,10 +24,14 @@ services:
           name: cita_salud
           property: password
 
-      # Variables de entorno para tus secretos de JWT
-      # Debes añadirlas manualmente en el dashboard de Render en la sección "Environment"
+      # --- Secretos (gestionados manualmente en el Dashboard de Render) ---
       - key: JWT_SECRET
-        value: "jkivU98HKkQUzbQq2vjCz+HyKNtkqAsyuyfVr4KF6W/DIEHj9NBx44+PUeuvc3kRY6Yjk84U8IURFgHSl+UuLg=="
+        sync: false # No sincroniza el valor con el repositorio Git
       - key: JWT_EXPIRATION
-        value: "86400000"
-    runtime: docker
+        sync: false # No sincroniza el valor con el repositorio Git
+    runtime:
+
+  # Define la base de datos PostgreSQL que tu servicio necesita
+  - type: psql
+    name: cita_salud # El nombre que usamos para referenciarla arriba
+    plan: free
