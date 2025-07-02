@@ -1,4 +1,4 @@
-# render.yaml (Versión final y recomendada)
+# render.yaml (Corregido con el tipo de base de datos correcto)
 
 services:
   # Define el servicio web para tu backend de Spring Boot
@@ -8,7 +8,6 @@ services:
     plan: free
     healthCheckPath: /actuator/health
 
-    # Variables de entorno
     envVars:
       # --- Conexión a la Base de Datos (gestionada por Render) ---
       - key: DB_URL
@@ -26,12 +25,13 @@ services:
 
       # --- Secretos (gestionados manualmente en el Dashboard de Render) ---
       - key: JWT_SECRET
-        sync: false # No sincroniza el valor con el repositorio Git
+        sync: false
       - key: JWT_EXPIRATION
-        sync: false # No sincroniza el valor con el repositorio Git
-    runtime:
+        sync: false
 
   # Define la base de datos PostgreSQL que tu servicio necesita
-  - type: psql
-    name: cita_salud # El nombre que usamos para referenciarla arriba
+  - type: db # <-- CORREGIDO: El tipo correcto es 'db'
+    name: cita_salud
+    databaseName: cita_salud_db # Nombre real de la base de datos interna
+    user: citasalud_user # Nombre del usuario que se creará
     plan: free
