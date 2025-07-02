@@ -1,4 +1,7 @@
 # 🩺 CitaSaludFeature3 — Backend
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=juangomez77udea_CitaSaludFeature3-QA&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=juangomez77udea_CitaSaludFeature3-QA)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=juangomez77udea_CitaSaludFeature3-QA)](https://sonarcloud.io/summary/new_code?id=juangomez77udea_CitaSaludFeature3-QA)
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=juangomez77udea_CitaSaludFeature3-QA)
 
 Backend del módulo de gestión de horarios y médicos para el sistema **CitaSaludFeature3**, desarrollado con **Spring Boot**. Este backend soporta las funcionalidades definidas en las historias de usuario **HU001** y **HU002**.
 
