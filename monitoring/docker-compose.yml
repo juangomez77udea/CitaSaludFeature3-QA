@@ -4,36 +4,31 @@ services:
   backend:
     image: citasalud-backend:1.0 # ¡Asegúrate de que este nombre y etiqueta coincidan con tu imagen!
     ports:
-      - "8080:8080" # Mapea el puerto 8080 del host al 8080 del contenedor
-    environment: # Pasa tus variables de entorno de la DB aquí
-      # **IMPORTANTE:** Reemplaza los valores con tus credenciales de Render.
+      - "8080:8080"
+    environment:
       DB_URL: "jdbc:postgresql://dpg-d0t7osm3jp1c73ea5c50-a.oregon-postgres.render.com/cita_salud"
-      DB_USERNAME: "postgress"
+      DB_USERNAME: "postgres" # <-- CORREGIDO: 'postgres' con una sola 's'
       DB_PASSWORD: "N2M2XB7EwxWgJoU6qkKQhYtCtt3SmqRN"
 
-    # *** HE ELIMINADO LA LÍNEA: depends_on: - prometheus ***
-    # El backend NO necesita esperar a Prometheus para iniciar.
-
-
   prometheus:
-    image: prom/prometheus:latest # Imagen oficial de Prometheus
+    image: prom/prometheus:latest
     ports:
-      - "9090:9090" # Mapea el puerto 9090 del host al 9090 del contenedor
+      - "9090:9090"
     volumes:
-      - ./prometheus:/etc/prometheus # Monta tu carpeta local 'prometheus' como config en el contenedor
+      - ./prometheus:/etc/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml' # Indica a Prometheus dónde encontrar su config
+      - '--config.file=/etc/prometheus/prometheus.yml'
     depends_on:
-      - backend # Prometheus SÍ necesita que el backend esté arriba para rasparlo
+      - backend
 
   grafana:
-    image: grafana/grafana:latest # Imagen oficial de Grafana
+    image: grafana/grafana:latest
     ports:
-      - "3000:3000" # Mapea el puerto 3000 del host al 3000 del contenedor
+      - "3000:3000"
     volumes:
-      - grafana-storage:/var/lib/grafana # Volumen persistente para los dashboards y configuraciones de Grafana
+      - grafana-storage:/var/lib/grafana
     depends_on:
-      - prometheus # Asegura que Grafana espere a que Prometheus esté arriba
+      - prometheus
 
 volumes:
-  grafana-storage: # Define el volumen para la persistencia de Grafana
+  grafana-storage:

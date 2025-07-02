@@ -1,0 +1,39 @@
+# render.yaml (Colocar en la raíz del proyecto)
+
+services:
+  # Define el servicio web para tu backend de Spring Boot
+  - type: web
+    name: backend-citasalud # Nombre de tu servicio en Render
+    env: docker # Indica a Render que use tu Dockerfile
+    dockerfilePath: ./Dockerfile # Ruta a tu Dockerfile
+
+    # Configuración del plan de instancia (puedes empezar con el gratuito)
+    plan: free
+
+    # Configuración del puerto
+    healthCheckPath: /actuator/health # Ruta para que Render verifique que tu app está viva
+
+    # Variables de entorno para conectar a tu base de datos de Render
+    # ¡MUY IMPORTANTE! Render las inyectará automáticamente si tu base de datos
+    # y tu servicio web están en el mismo proyecto de Render.
+    envVars:
+      - key: DB_URL # Render provee la URL interna, más rápida y segura
+        fromDatabase:
+          name: cita_salud # El nombre de tu base de datos en Render
+          property: internalConnectionString
+      - key: DB_USERNAME
+        fromDatabase:
+          name: cita_salud
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: cita_salud
+          property: password
+
+      # Variables de entorno para tus secretos de JWT
+      # Debes añadirlas manualmente en el dashboard de Render en la sección "Environment"
+      - key: JWT_SECRET
+        value: "jkivU98HKkQUzbQq2vjCz+HyKNtkqAsyuyfVr4KF6W/DIEHj9NBx44+PUeuvc3kRY6Yjk84U8IURFgHSl+UuLg=="
+      - key: JWT_EXPIRATION
+        value: "86400000"
+    runtime: docker
