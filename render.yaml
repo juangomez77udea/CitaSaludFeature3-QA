@@ -1,7 +1,7 @@
-# render.yaml (Corregido con el tipo de base de datos correcto)
+# render.yaml (Corregido con el tipo 'psql' y la indentación correcta)
 
 services:
-  # Define el servicio web para tu backend de Spring Boot
+  # 1. Servicio Web para el backend
   - type: web
     name: backend-citasalud
     env: docker
@@ -9,29 +9,25 @@ services:
     healthCheckPath: /actuator/health
 
     envVars:
-      # --- Conexión a la Base de Datos (gestionada por Render) ---
       - key: DB_URL
         fromDatabase:
-          name: cita_salud
+          name: cita-salud-db # Usamos el nuevo nombre para evitar conflictos
           property: internalConnectionString
       - key: DB_USERNAME
         fromDatabase:
-          name: cita_salud
+          name: cita-salud-db
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: cita_salud
+          name: cita-salud-db
           property: password
 
-      # --- Secretos (gestionados manualmente en el Dashboard de Render) ---
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRATION
         sync: false
 
-  # Define la base de datos PostgreSQL que tu servicio necesita
-  - type: db # <-- CORREGIDO: El tipo correcto es 'db'
-    name: cita_salud
-    databaseName: cita_salud_db # Nombre real de la base de datos interna
-    user: citasalud_user # Nombre del usuario que se creará
+  # 2. Servicio de Base de Datos PostgreSQL
+  - type: psql # <-- CORREGIDO: El tipo correcto es 'psql'
+    name: cita-salud-db # Le damos un nombre único para la base de datos
     plan: free
