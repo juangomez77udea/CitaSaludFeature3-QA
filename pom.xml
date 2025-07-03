@@ -7,7 +7,6 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<!-- Actualizado a la última versión de parche para solucionar vulnerabilidades -->
 		<version>3.3.2</version>
 		<relativePath/>
 	</parent>
@@ -21,6 +20,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Propiedad para la versión de JJWT -->
 		<jjwt.version>0.12.5</jjwt.version>
@@ -32,11 +32,6 @@
 		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 	</properties>
 
-	<!--
-        SECCIÓN AÑADIDA: dependencyManagement
-        Aquí forzamos la versión de JJWT para todo el proyecto,
-        sobreescribiendo la versión que viene con Spring Boot.
-    -->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -94,7 +89,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Dependencias para JWT (versión gestionada en dependencyManagement) -->
+		<!-- Dependencias para JWT -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -156,6 +151,22 @@
 	<build>
 		<finalName>backend</finalName>
 		<plugins>
+			<!-- ================================================== -->
+			<!-- === INICIO DE LA CORRECCIÓN PARA EL ERROR DE BUILD === -->
+			<!-- ================================================== -->
+			<!-- Configuración explícita para el plugin de recursos -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version> <!-- Versión del log de error -->
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<!-- ================================================ -->
+			<!-- === FIN DE LA CORRECCIÓN PARA EL ERROR DE BUILD === -->
+			<!-- ================================================ -->
+
 			<!-- PLUGIN DE COMPILADOR CON CONFIGURACIÓN PARA LOMBOK -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
