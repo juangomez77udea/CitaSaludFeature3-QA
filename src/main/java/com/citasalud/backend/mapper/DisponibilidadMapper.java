@@ -11,7 +11,10 @@ public class DisponibilidadMapper {
         dto.setFechaInicio(entity.getFechaInicio());
         dto.setFechaFin(entity.getFechaFin());
         dto.setHoraInicio(entity.getHoraInicio());
-        dto.setHoraFin(entity.getHoraFin()); 
+        dto.setHoraFin(entity.getHoraFin());
+        if (entity.getMedico() != null) {
+            dto.setMedicoId(entity.getMedico().getId());
+        }
         return dto;
     }
 

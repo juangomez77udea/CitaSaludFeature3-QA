@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  # Define el servicio de la base de datos PostgreSQL para desarrollo local
+  postgres_db:
+    image: postgres:15
+    container_name: citasalud-db-local
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: N2M2XB7EwxWgJoU6qkKQhYtCtt3SmqRN
+      POSTGRES_DB: cita_salud_local
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

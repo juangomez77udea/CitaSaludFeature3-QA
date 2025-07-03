@@ -26,6 +26,7 @@ public class DisponibilidadDTO extends RepresentationModel<DisponibilidadDTO> {
     private LocalTime horaInicio;
     @NotNull(message = "La hora de fin no puede ser nula")
     private LocalTime horaFin;
+    private Long medicoId;
 
 }
 

@@ -54,7 +54,6 @@ public class DataProvider {
         return List.of(medico1, medico2);
     }
 
-    // --- MÉTODOS RESTAURADOS que faltaban ---
     public static List<Medico> crearListaMedicosConRelaciones() {
         Especialidad cardiologia = new Especialidad();
         cardiologia.setEspecialidadId(1L);
@@ -93,22 +92,24 @@ public class DataProvider {
         return List.of(medicoSinFranjas);
     }
 
-    // --- Métodos para DISPONIBILIDAD ---
+    // --- Métodos para DISPONIBILIDAD (CORREGIDOS) ---
     public static DisponibilidadDTO crearDisponibilidadDTOValida() {
-        return new DisponibilidadDTO(null, List.of("LUNES", "MIERCOLES"), LocalDate.now().plusDays(1), LocalDate.now().plusMonths(3), LocalTime.of(9, 0), LocalTime.of(13, 0));
+        // CORREGIDO: Se añade el medicoId (1L) como último argumento
+        return new DisponibilidadDTO(null, List.of("LUNES", "MIERCOLES"), LocalDate.now().plusDays(1), LocalDate.now().plusMonths(3), LocalTime.of(9, 0), LocalTime.of(13, 0), 1L);
     }
 
     public static DisponibilidadDTO crearDisponibilidadDTOInvalida() {
-        return new DisponibilidadDTO(null, new ArrayList<>(), LocalDate.now().plusDays(1), LocalDate.now().plusMonths(3), LocalTime.of(14, 0), LocalTime.of(18, 0));
+        // CORREGIDO: Se añade el medicoId (1L) como último argumento
+        return new DisponibilidadDTO(null, new ArrayList<>(), LocalDate.now().plusDays(1), LocalDate.now().plusMonths(3), LocalTime.of(14, 0), LocalTime.of(18, 0), 1L);
     }
 
     public static List<DisponibilidadDTO> crearListaDisponibilidadDTO() {
-        DisponibilidadDTO franjaManana = new DisponibilidadDTO(1L, List.of("LUNES", "MARTES"), LocalDate.now().plusDays(1), LocalDate.now().plusMonths(1), LocalTime.of(8, 0), LocalTime.of(12, 0));
-        DisponibilidadDTO franjaTarde = new DisponibilidadDTO(2L, List.of("MIERCOLES", "JUEVES"), LocalDate.now().plusDays(2), LocalDate.now().plusMonths(2), LocalTime.of(14, 0), LocalTime.of(18, 0));
+        // CORREGIDO: Se añade el medicoId a cada constructor
+        DisponibilidadDTO franjaManana = new DisponibilidadDTO(1L, List.of("LUNES", "MARTES"), LocalDate.now().plusDays(1), LocalDate.now().plusMonths(1), LocalTime.of(8, 0), LocalTime.of(12, 0), 1L);
+        DisponibilidadDTO franjaTarde = new DisponibilidadDTO(2L, List.of("MIERCOLES", "JUEVES"), LocalDate.now().plusDays(2), LocalDate.now().plusMonths(2), LocalTime.of(14, 0), LocalTime.of(18, 0), 2L);
         return List.of(franjaManana, franjaTarde);
     }
 
-    // MÉTODO RESTAURADO que faltaba
     public static List<Disponibilidad> crearListaDisponibilidadEntidad() {
         Disponibilidad franja1 = new Disponibilidad();
         franja1.setDisponibilidadId(1L);
